@@ -1,0 +1,454 @@
+<html>
+<head>
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<link href='https://fonts.googleapis.com/css?family=Josefin+Sans:400,600,700|Montserrat|Raleway|Lato:&effect=canvas-print|stonewash' rel='stylesheet' type='text/css'>
+
+<style>
+/* Set the style of index page*/
+body { 
+  font-family: 'Raleway', sans-serif;
+  margin: 50px auto;
+  text-align: center;
+  background-color: #F5F5F5;
+}
+
+div { margin: 40px; }
+
+.axis{
+  stroke-width:1px;
+}
+
+h1{
+  font-size: 24pt;
+  margin: 50px 0 5px 0;
+}
+
+h2 {
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+h3 {
+  font-size: 24px;
+  margin: 40px 0 15px 0;
+}
+
+p {
+  width: 900px;
+  font-size: 18px;
+  margin: 30px auto 40px auto;
+}
+
+circle {
+  opacity: 0.6;
+}
+
+path{
+   stroke-width: 2;
+   fill:transparent;
+   stroke:#333;
+}
+
+.tick{
+  font-size: 10pt;
+  font-weight:400;
+}
+
+.wrapper {
+  width: 1080px;
+  margin: 0 auto;
+  background-color:#FFFAFA;
+}
+
+#canvas{
+  width:800px;
+  float: left; 
+}
+
+#legend {
+  width: 200px;
+  float: left;
+  height: 800px;
+}
+
+.clear {
+  clear: both;
+}
+
+#mapC, #mapJava, #mapJS {
+  margin: 0 auto;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- Popularity of programming languages through time -->
+<h1 class="font-effect-canvas-print">Popularity of GitHub Repository Programming Languages from 2012 to 2014</h1>
+
+<p>
+The chart shows the ten most popular programming languages used by GitHub open source repositories from 2012 to 2014. We represent the data in the form of percentage of total open source collaborators to better understand the trend for each language.
+</p>
+
+<!-- draw the legend of the the chart -->
+<div class="wrapper">
+  <div id="canvas"></div>
+  <svg id="legend" height="800" width="200">
+    <circle cx="10" cy="165" r="5" fill="#842DCE"></circle>
+    <circle cx="10" cy="390" r="5" fill="#F87217"></circle>
+    <circle cx="10" cy="430" r="5" fill="#2B65EC"></circle>
+    <circle cx="10" cy="490" r="5" fill="#E4287C"></circle>
+    <circle cx="10" cy="510" r="5" fill="#46C7C7"></circle>
+    <circle cx="10" cy="550" r="5" fill="#C58917"></circle>
+    <circle cx="10" cy="575" r="5" fill="#41A317"></circle>
+    <circle cx="10" cy="610" r="5" fill="#38ACEC"></circle>
+    <circle cx="10" cy="630" r="5" fill="#F75D59"></circle>
+    <circle cx="10" cy="650" r="5" fill="#413839"></circle>
+
+    <text text-anchor="middle" x="60" y="170" fill="black" font-family="Lato">JavaScript</text>
+    <text text-anchor="middle" x="40" y="395" fill="black" font-family="Lato">Java</text>
+    <text text-anchor="middle" x="50" y="435" fill="black" font-family="Lato">Python</text>
+    <text text-anchor="middle" x="40" y="495" fill="black" font-family="Lato">PHP</text>
+    <text text-anchor="middle" x="42" y="515" fill="black" font-family="Lato">Ruby</text>
+    <text text-anchor="middle" x="40" y="555" fill="black" font-family="Lato">C++</text>
+    <text text-anchor="middle" x="31" y="580" fill="black" font-family="Lato">C</text>
+    <text text-anchor="middle" x="36" y="615" fill="black" font-family="Lato">C#</text>
+    <text text-anchor="middle" x="43" y="635" fill="black" font-family="Lato">Shell</text>
+    <text text-anchor="middle" x="68" y="655" fill="black" font-family="Lato">Objective-C</text>
+  </svg>
+  <div class="clear"></div>
+</div>
+
+<!-- Map the data to the chart and draw paths-->
+<script>
+
+var margin = {top: 50, right: 50, bottom: 50, left: 50};
+var width = 800 - margin.left - margin.right;
+var height = 700 - margin.top - margin.bottom;
+
+var svg = d3.select("#canvas").append("svg")
+    .attr("width", width + margin.left + margin.right + 100)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+//  draw axes and linear scale data
+var labels = ["2012 Jan-Jun", "2012 Jul-Dec", "2013 Jan-Jun", "2013 Jul-Dec", "2014 Jan-Jun", "2014 Jul-Dec"];
+var xScaleAxis = d3.scale.ordinal().domain(labels).rangeRoundBands([0, width],-1.0);
+var xScale = d3.scale.linear().domain([0,5]).range([0, width]); 
+var yScale = d3.scale.linear().domain([0,20]).range([height, 0]); 
+var xAxis = d3.svg.axis().scale(xScaleAxis).orient("bottom").ticks(6);
+var yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+// append text to axes
+svg.append("g")
+  .attr("class", "y axis")
+  .call(yAxis)
+  .append("text")
+  .attr("class", "label")
+  .attr("x", 90)
+  .attr("y", -20)
+  .attr("transform", "rotate(90)")
+  .style("text-anchor", "end")
+  .text("% of Collaborators");
+
+svg.append("g")
+  .attr("class", "x axis")
+  .attr("transform", "translate(0," + height + ")")
+  .call(xAxis)
+  .append("text")
+  .attr("class", "label")
+  .attr("x", width + 40)
+  .attr("y", -10)
+  .style("text-anchor", "end")
+  .text("Time");
+
+
+d3.csv("percentage.csv", function(error,data) {
+  d3.select("#canvas").append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  data.forEach(function(entry){
+    
+    // append circles at each point 
+    svg.append("circle")
+      .attr("cx", xScale(parseInt(entry.period)))
+      .attr("cy", yScale(parseFloat(entry.percentage*100))).attr("r", 8).attr("fill", selectColor(entry.repository_language));
+
+    // get the y position of the next point of the same language
+    function getNext(entry) {
+      for (var i = 0; i < data.length; i++) {
+        var str1 = data[i].repository_language;
+        var str2 = entry.repository_language;
+        var period1 = parseInt(data[i].period);
+        var period2 = parseInt(entry.period);
+        if ((str1 == str2) && (period1 == (period2 + 1))) {
+          result = parseFloat(data[i].percentage)*100;
+        }
+      }
+      return result;
+    }
+
+    // draw lines between two contiguous points to get paths
+    if (entry.period < 5) {
+      svg.append("line").attr("style", "stroke: "+selectColor(entry.repository_language)+"; stroke-width: 4px; opacity: 0.6;")
+      .attr("x1", xScale(parseInt(entry.period)))
+      .attr("y1", yScale(parseFloat(entry.percentage * 100)))
+      .attr("x2", xScale(parseInt(entry.period) + 1))
+      .attr("y2", yScale(getNext(entry)));
+    }
+    
+  });
+
+});
+
+// select color for different languages
+function selectColor(language) {
+  switch (language) {
+      case "JavaScript":
+          return "#842DCE"
+          break;
+      case "Java":
+          return "#F87217"
+          break;
+      case "Python":
+          return "#2B65EC";
+          break;
+      case "PHP":
+          return "#E4287C";
+          break;
+      case "Ruby":
+          return "#46C7C7"
+          break;
+      case "C++":
+          return "#C58917";
+          break;
+      case "C":
+          return "#41A317";
+          break;
+      case "C#":
+          return "#38ACEC"
+          break;
+      case "Shell":
+          return "#F75D59";
+          break;
+      case "Objective-C":
+          return "#413839";
+          break;
+    }
+}
+
+</script>
+
+<!-- Popularity of programming languages by location -->
+<h1 class="font-effect-canvas-print"> Popularity of Programming Language By Location</h1>
+<h2 class="font-effect-stonewash"> The charts below represent the popularity of 3 programming languages in the year 2014 - JavaScript, Java, C by location.</h2>
+
+<h3 class="font-effect-canvas-print">JavaScript Distribution</h3>
+<p>As seen in the previous chart, we conclude that JavaScript is the most popular programming language within the Github community. The map below suggests that JavaScript is used extensively throughout the world. Although, within the United States, JavaScript is more popular on the East Coast than the West Coast.</p>
+
+
+<!-- JavaScript distribution -->
+<div class="wrapper">
+  <div id ="mapJS"></div>
+</div>
+
+<script>
+    var mapwidth = 960, mapheight = 550;
+    var projection = d3.geo.equirectangular();
+    var path = d3.geo.path().projection(projection);
+    var svgMapJS = d3.select("#mapJS").append("svg")
+                  .attr("width", mapwidth).attr("height", mapheight);
+    var gMapJS = svgMapJS.append("g");
+    var worldObjectJS;
+    d3.json("world-50m.json", function(error, world){
+        worldObjectJS = world;
+        if(error){console.log(error);}
+
+        var countries = topojson.feature(world, world.objects.countries).features;
+        countries.forEach(function(country){
+            gMapJS.append("path").attr("d", path(country))
+             .style("fill", "#ccc")
+             .style("stroke", "#888")
+             .style("stroke-width", 1);
+        });
+        d3.csv("400_JS_occ.csv", function(error, csvdata){
+            if(error){
+                console.log(error);
+            }
+
+            var occur = new Array();
+            
+            for(var i = 0; i < csvdata.length; i++){
+                var occur_number = parseInt(csvdata[i].occurences);
+                occur.push(occur_number);
+            }
+            var max_occur = d3.max(occur);
+            var min_occur = d3.min(occur);
+            var radius_scale = d3.scale.linear()
+                .domain([min_occur, max_occur])
+                .range([0, 20]);
+            
+            for(var i = 0; i < csvdata.length; i++){
+                var lon = csvdata[i].longitude;
+                var lat = csvdata[i].latitude;
+                var occ = csvdata[i].occurences;
+                if(lat == "" || lon == "" || occ == ""){
+                    continue;
+                }
+                var lon_number = parseFloat(lon);
+                var lat_number = parseFloat(lat);
+                var occur_number = parseInt(occ);
+                var radius = radius_scale(occur_number) + 7;
+                var coordiantes2 = projection([lat_number, lon_number]);
+                gMapJS.append("circle").attr("cx", coordiantes2[0])
+                    .attr("cy", coordiantes2[1])
+                    .attr("r", radius)
+                    .style("fill", "#842DCE")
+                    .style("opacity", 0.6);
+                
+        }
+    });
+});
+</script>
+
+
+<!-- Java distribution -->
+<h3 class="font-effect-canvas-print">Java Distribution</h3>
+<p>Being the second most popular, Java is also used widely throughout the world. The interesting distincion between the usage patterns for JavaScript and Java are seen in United States and South America. While the JavaScript users are concentrated on the coasts, Java users are spread uniformly throughout the United States. Furthermore, Java is seen to be more popular in South America than JavaScript.</p>
+
+<div class="wrapper">
+  <div id ="mapJava"></div>
+</div>
+
+<script>
+    var mapwidth = 960, mapheight = 550;
+    var projection = d3.geo.equirectangular();
+    var path = d3.geo.path().projection(projection);
+    var svgMapJava = d3.select("#mapJava").append("svg")
+                  .attr("width", mapwidth).attr("height", mapheight);
+    var gMapJava = svgMapJava.append("g");
+    var worldObjectJava;
+    d3.json("world-50m.json", function(error, world){
+        worldObjectJava = world;
+        if(error){console.log(error);}
+
+        var countries = topojson.feature(world, world.objects.countries).features;
+        countries.forEach(function(country){
+            gMapJava.append("path").attr("d", path(country))
+             .style("fill", "#ccc")
+             .style("stroke", "#888")
+             .style("stroke-width", 1);
+        });
+
+        d3.csv("400_Java_occ.csv", function(error, csvdata){
+        if(error){
+            console.log(error);
+        }
+
+         var occur = new Array();
+            
+        for(var i = 0; i < csvdata.length; i++){
+            var occur_number = parseInt(csvdata[i].occurences);
+            occur.push(occur_number);
+        }
+        var max_occur = d3.max(occur);
+        var min_occur = d3.min(occur);
+        var radius_scale = d3.scale.linear()
+            .domain([min_occur, max_occur])
+            .range([0, 20]);
+        
+        for(var i = 0; i < csvdata.length; i++){
+            var lon = csvdata[i].longitude;
+            var lat = csvdata[i].latitude;
+            var occ = csvdata[i].occurences;
+            if(lat == "" || lon == "" || occ == ""){
+                continue;
+            }
+            var lon_number = parseFloat(lon);
+            var lat_number = parseFloat(lat);
+            var occur_number = parseInt(occ);
+            var radius = radius_scale(occur_number) + 7;
+            var coordiantes1 = projection([lat_number, lon_number]);
+            gMapJava.append("circle").attr("cx", coordiantes1[0])
+                .attr("cy", coordiantes1[1])
+                .attr("r", radius)
+                .style("fill", "#F87217")
+                .style("opacity", 0.6);
+            
+        }
+    });
+});  
+</script>
+    
+<!-- C distribution -->
+<h3 class="font-effect-canvas-print">C Distribution</h3>
+<p>The usage pattern for C suggests that while it is not concentrated in any specific region, it is used still used in small numbers throughout the world.</p>
+
+<div class="wrapper">
+  <div id ="mapC"></div>
+</div>
+
+<script>
+    var mapwidth = 960, mapheight = 550;
+    var projection = d3.geo.equirectangular();
+    var path = d3.geo.path().projection(projection);
+    var svgMapC = d3.select("#mapC").append("svg")
+                  .attr("width", mapwidth).attr("height", mapheight);
+    var gMapC = svgMapC.append("g");
+    var worldObjectC;
+    d3.json("world-50m.json", function(error, world){
+      worldObjectC = world;
+      if(error){console.log(error);}
+
+      var countries = topojson.feature(world, world.objects.countries).features;
+      countries.forEach(function(country){
+        gMapC.append("path").attr("d", path(country))
+         .style("fill", "#ccc")
+         .style("stroke", "#888")
+         .style("stroke-width", 1);
+      });
+
+         d3.csv("400_C_occ.csv", function(error, csvdata){
+        if(error){
+            console.log(error);
+        }
+
+         var occur = new Array();
+            
+        for(var i = 0; i < csvdata.length; i++){
+            var occur_number = parseInt(csvdata[i].occurences);
+            occur.push(occur_number);
+        }
+        var max_occur = d3.max(occur);
+        var min_occur = d3.min(occur);
+        var radius_scale = d3.scale.linear()
+            .domain([min_occur, max_occur])
+            .range([0, 20]);
+        
+        for(var i = 0; i < csvdata.length; i++){
+              var lon = csvdata[i].longitude;
+            var lat = csvdata[i].latitude;
+            var occ = csvdata[i].occurences;
+            if(lat == "" || lon == "" || occ == ""){
+                continue;
+            }
+            var lon_number = parseFloat(lon);
+            var lat_number = parseFloat(lat);
+            var occur_number = parseInt(occ);
+            var radius = radius_scale(occur_number) + 7;
+            var coordiantes = projection([lat_number, lon_number]);
+            gMapC.append("circle").attr("cx", coordiantes[0])
+                .attr("cy", coordiantes[1])
+                .attr("r", radius)
+                .style("fill", "#41A317")
+                .style("opacity", 0.6);
+             
+        }
+    });
+});
+</script>
+
+</body>
+</html>
