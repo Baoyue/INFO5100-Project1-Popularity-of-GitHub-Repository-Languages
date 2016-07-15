@@ -3,9 +3,9 @@
 ## Data Description
 ### Data Retreival: 
 
-We used the GitHub archive as a source for all of our datasets. https://www.githubarchive.org/
-The necessary data was retrieved using BigQuery which queried the database and generated
-csv files with the necessary data.
+We used the [GitHub archive](https://www.githubarchive.org/) as a source for all of our datasets. 
+The necessary data was retrieved using BigQuery which queried the database and generated csv 
+files with the necessary data.
 
 The original dataset consisted of a large amount of information that we did not need for our
 project. We used the following queries to get all the required data:
