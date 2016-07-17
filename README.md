@@ -1,5 +1,7 @@
 # INFO5100 Project1: Popularity of GitHub Repository Languages
 
+## Please click [INFO5100 Project1](https://baoyue.github.io/INFO5100Project1/index.html) to view this visualization
+
 ## Data Description
 ### Data Retreival: 
 
